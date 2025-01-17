@@ -1,27 +1,7 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\IconController;
-
-Route::get('/', function () {
-    return view('welcome');
-});
-
-// Route::get('/dashboard', function () {
-//     return view('icon.index');
-// });
-
-// Route::get('/icon/create', function () {
-//     return view('icon.create');
-// });
-
-Route::get('/dashboard', [IconController::class, 'index']);
-Route::get('/icon/create',[IconController::class, 'create']);
-Route::get('/icon/{icon_id}', [IconController::class, 'show']);
-
-//登録用
-Route::post('/icon/store',[IconController::class, 'store']);
-// use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,10 +14,41 @@ Route::post('/icon/store',[IconController::class, 'store']);
 |
 */
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
+Route::get('/', function () {
+    return view('welcome');
+});
 
-// Route::get('/test', function () {
-//     return view('test');
-// });
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard'); // 認証後に表示するダッシュボード
+    })->name('dashboard');
+});
+
+// Route::get('/dashboard', function () {
+//     return view('dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// チャット機能のルート設定
+use App\Http\Controllers\ChatController;
+
+// 最初の質問を表示
+Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+
+// 次のメッセージを表示
+Route::post('/chat/next', [ChatController::class, 'next'])->name('chat.next');
+
+// セッション動作確認用ルート
+Route::get('/session-test', function () {
+    // セッションに値を保存
+    session(['key' => 'value']);
+    // セッションから値を取得して返す
+    return session('key');
+});
+
+require __DIR__.'/auth.php';
